@@ -6,13 +6,9 @@
 
 <title>CAPTCHA 이미지 생성기</title>
 
-<!-- PNG 저장용 -->
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
 <style>
-/* =========================================================
-   기본
-========================================================= */
 
 * {
   box-sizing: border-box;
@@ -21,10 +17,7 @@
 body {
   margin: 0;
   background: #f3f3f3;
-  font-family:
-    Arial,
-    "Noto Sans KR",
-    sans-serif;
+  font-family: Arial, "Noto Sans KR", sans-serif;
   color: #333;
 }
 
@@ -34,18 +27,17 @@ body {
 }
 
 
-/* =========================================================
+/* ================================
    편집 패널
-========================================================= */
+================================ */
 
 .editor-panel {
-  background: white;
+  background: #fff;
   border-radius: 12px;
   padding: 24px;
   margin-bottom: 30px;
 
-  box-shadow:
-    0 8px 30px rgba(0,0,0,.08);
+  box-shadow: 0 8px 30px rgba(0,0,0,.08);
 }
 
 .editor-panel h1 {
@@ -76,10 +68,10 @@ body {
   width: 240px;
   height: 42px;
 
+  padding: 0 12px;
+
   border: 1px solid #ddd;
   border-radius: 6px;
-
-  padding: 0 12px;
 
   font-size: 16px;
 }
@@ -88,37 +80,18 @@ body {
   width: 70px;
   height: 42px;
 
+  padding: 0;
+
   border: none;
   background: transparent;
 
   cursor: pointer;
 }
 
-.download-btn {
-  height: 42px;
 
-  border: none;
-  border-radius: 6px;
-
-  padding: 0 22px;
-
-  background: #673ab7;
-  color: white;
-
-  font-size: 15px;
-  font-weight: bold;
-
-  cursor: pointer;
-}
-
-.download-btn:hover {
-  filter: brightness(.9);
-}
-
-
-/* =========================================================
-   CAPTCHA 전체
-========================================================= */
+/* ================================
+   CAPTCHA
+================================ */
 
 #captcha {
   width: min(720px, 100%);
@@ -128,16 +101,15 @@ body {
 
   border: 1px solid #eee;
 
-  box-shadow:
-    0 8px 30px rgba(0,0,0,.08);
+  box-shadow: 0 8px 30px rgba(0,0,0,.08);
 
   overflow: hidden;
 }
 
 
-/* =========================================================
-   상단 안내 영역
-========================================================= */
+/* ================================
+   상단
+================================ */
 
 .captcha-header {
   margin: 14px 14px 8px;
@@ -147,7 +119,6 @@ body {
   padding: 38px 42px;
 
   background: #673ab7;
-
   color: white;
 
   transition: background .2s;
@@ -160,26 +131,24 @@ body {
   font-weight: 400;
 
   letter-spacing: -5px;
-
   line-height: 1;
 }
 
 .captcha-description {
-  max-width: 520px;
+  max-width: 540px;
 
   color: rgba(255,255,255,.62);
 
   font-size: 24px;
-
   font-weight: 300;
 
   line-height: 1.45;
 }
 
 
-/* =========================================================
-   3 x 3 이미지
-========================================================= */
+/* ================================
+   3 × 3 이미지
+================================ */
 
 .image-grid {
   margin: 0 14px;
@@ -190,7 +159,7 @@ body {
 
   gap: 6px;
 
-  background: white;
+  background: #fff;
 }
 
 .image-slot {
@@ -204,7 +173,7 @@ body {
     linear-gradient(
       135deg,
       #f5f5f5,
-      #ececec
+      #e8e8e8
     );
 
   cursor: pointer;
@@ -221,7 +190,6 @@ body {
   transform: translate(-50%, -50%);
 
   font-size: 46px;
-
   font-weight: 200;
 
   color: #aaa;
@@ -262,9 +230,9 @@ body {
 }
 
 
-/* =========================================================
+/* ================================
    하단 CAPTCHA UI
-========================================================= */
+================================ */
 
 .captcha-footer {
   height: 135px;
@@ -319,16 +287,17 @@ body {
   color: rgba(255,255,255,.72);
 
   font-size: 27px;
-
   font-weight: 300;
+
+  cursor: pointer;
 
   transition: background .2s;
 }
 
 
-/* =========================================================
+/* ================================
    크롭 모달
-========================================================= */
+================================ */
 
 .modal {
   position: fixed;
@@ -360,20 +329,18 @@ body {
 
   padding: 24px;
 
-  box-shadow:
-    0 20px 80px rgba(0,0,0,.35);
+  box-shadow: 0 20px 80px rgba(0,0,0,.35);
 }
 
 .modal-box h2 {
   margin: 0 0 18px;
-
   font-size: 20px;
 }
 
 
-/* =========================================================
+/* ================================
    크롭 영역
-========================================================= */
+================================ */
 
 .crop-stage {
   position: relative;
@@ -408,8 +375,7 @@ body {
   left: 50%;
   top: 50%;
 
-  transform:
-    translate(-50%, -50%);
+  transform: translate(-50%, -50%);
 
   pointer-events: none;
 
@@ -431,9 +397,9 @@ body {
 }
 
 
-/* =========================================================
-   모달 컨트롤
-========================================================= */
+/* ================================
+   크롭 컨트롤
+================================ */
 
 .crop-controls {
   margin-top: 18px;
@@ -485,7 +451,6 @@ body {
 
 .save-crop-btn {
   background: #673ab7;
-
   color: white;
 }
 
@@ -498,15 +463,14 @@ body {
 }
 
 
-/* =========================================================
+/* ================================
    모바일
-========================================================= */
+================================ */
 
 @media (max-width: 600px) {
 
   .captcha-header {
     min-height: 180px;
-
     padding: 28px 24px;
   }
 
@@ -542,6 +506,7 @@ body {
   }
 
 }
+
 </style>
 </head>
 
@@ -551,218 +516,204 @@ body {
 <div class="app">
 
 
-<!-- =====================================================
-     편집 패널
-===================================================== -->
+  <!-- 편집 설정 -->
 
-<div class="editor-panel">
+  <div class="editor-panel">
 
-  <h1>CAPTCHA 이미지 생성기</h1>
+    <h1>CAPTCHA 이미지 생성기</h1>
 
-  <div class="settings">
+    <div class="settings">
 
-    <div class="setting">
+      <div class="setting">
 
-      <label>
-        OO 부분 입력
-      </label>
+        <label>텍스트</label>
 
-      <input
-        type="text"
-        id="targetInput"
-        placeholder="예: 신호등"
-      >
+        <input
+          type="text"
+          id="targetInput"
+          placeholder="예: 신호등"
+        >
 
-    </div>
+      </div>
 
 
-    <div class="setting">
+      <div class="setting">
 
-      <label>
-        상단 박스 색상
-      </label>
+        <label>컬러</label>
 
-      <input
-        type="color"
-        id="colorInput"
-        value="#673ab7"
-      >
+        <input
+          type="color"
+          id="colorInput"
+          value="#673ab7"
+        >
+
+      </div>
 
     </div>
-
-
-    <button
-      class="download-btn"
-      id="downloadBtn"
-    >
-      PNG 다운로드
-    </button>
 
   </div>
 
-</div>
 
 
+  <!-- CAPTCHA -->
 
-<!-- =====================================================
-     실제 CAPTCHA
-===================================================== -->
-
-<div id="captcha">
+  <div id="captcha">
 
 
-  <!-- 상단 -->
-
-  <div
-    class="captcha-header"
-    id="captchaHeader"
-  >
-
-    <div class="captcha-title">
-      가나다
-    </div>
+    <!-- 상단 -->
 
     <div
-      class="captcha-description"
-      id="description"
+      class="captcha-header"
+      id="captchaHeader"
     >
-      OO가 있는 이미지를 모두 선택하세요.<br>
-      위의 조건과 일치하는 이미지를 모두 선택했으면 확인을 클릭하세요.
-    </div>
 
-  </div>
-
-
-
-  <!-- 9칸 -->
-
-  <div
-    class="image-grid"
-    id="imageGrid"
-  ></div>
-
-
-
-  <!-- 하단 -->
-
-  <div class="captcha-footer">
-
-
-    <!-- 새로고침 -->
-
-    <div class="fake-icon">
-
-      <svg
-        viewBox="0 0 64 64"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="4"
-        stroke-linecap="round"
-        stroke-linejoin="round"
+      <div
+        class="captcha-title"
+        id="captchaTitle"
       >
-
-        <path
-          d="M53 24A22 22 0 1 0 55 40"
-        />
-
-        <path
-          d="M53 10V24H39"
-        />
-
-      </svg>
-
-    </div>
+        OO
+      </div>
 
 
-
-    <!-- 헤드폰 -->
-
-    <div class="fake-icon">
-
-      <svg
-        viewBox="0 0 64 64"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="4"
-        stroke-linecap="round"
-        stroke-linejoin="round"
+      <div
+        class="captcha-description"
+        id="description"
       >
-
-        <path
-          d="M10 35V30A22 22 0 0 1 54 30V35"
-        />
-
-        <path
-          d="M10 35V48H20V35"
-          fill="currentColor"
-        />
-
-        <path
-          d="M54 35V48H44V35"
-          fill="currentColor"
-        />
-
-      </svg>
+        가 있는 이미지를 모두 선택하세요.<br>
+        위의 조건과 일치하는 이미지를 모두 선택했으면 확인을 클릭하세요.
+      </div>
 
     </div>
 
 
 
-    <!-- 정보 -->
-
-    <div class="fake-icon">
-
-      <svg
-        viewBox="0 0 64 64"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="4"
-      >
-
-        <circle
-          cx="32"
-          cy="32"
-          r="24"
-        />
-
-        <path
-          d="M32 29V46"
-        />
-
-        <circle
-          cx="32"
-          cy="20"
-          r="2"
-          fill="currentColor"
-        />
-
-      </svg>
-
-    </div>
-
-
-
-    <!-- 확인 -->
+    <!-- 이미지 9칸 -->
 
     <div
-      class="confirm-button"
-      id="confirmButton"
-    >
-      확인
-    </div>
+      class="image-grid"
+      id="imageGrid"
+    ></div>
 
+
+
+    <!-- 하단 -->
+
+    <div class="captcha-footer">
+
+
+      <!-- 새로고침 -->
+
+      <div class="fake-icon">
+
+        <svg
+          viewBox="0 0 64 64"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="4"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+
+          <path
+            d="M53 24A22 22 0 1 0 55 40"
+          />
+
+          <path
+            d="M53 10V24H39"
+          />
+
+        </svg>
+
+      </div>
+
+
+
+      <!-- 헤드폰 -->
+
+      <div class="fake-icon">
+
+        <svg
+          viewBox="0 0 64 64"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="4"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+
+          <path
+            d="M10 35V30A22 22 0 0 1 54 30V35"
+          />
+
+          <path
+            d="M10 35V48H20V35"
+            fill="currentColor"
+          />
+
+          <path
+            d="M54 35V48H44V35"
+            fill="currentColor"
+          />
+
+        </svg>
+
+      </div>
+
+
+
+      <!-- 정보 -->
+
+      <div class="fake-icon">
+
+        <svg
+          viewBox="0 0 64 64"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="4"
+        >
+
+          <circle
+            cx="32"
+            cy="32"
+            r="24"
+          />
+
+          <path
+            d="M32 29V46"
+          />
+
+          <circle
+            cx="32"
+            cy="20"
+            r="2"
+            fill="currentColor"
+          />
+
+        </svg>
+
+      </div>
+
+
+
+      <!-- 확인 -->
+
+      <div
+        class="confirm-button"
+        id="confirmButton"
+      >
+        확인
+      </div>
+
+
+    </div>
 
   </div>
 
 </div>
 
-</div>
 
 
-
-<!-- =====================================================
-     숨겨진 파일 업로드
-===================================================== -->
+<!-- 이미지 업로드 -->
 
 <input
   type="file"
@@ -773,9 +724,7 @@ body {
 
 
 
-<!-- =====================================================
-     크롭 모달
-===================================================== -->
+<!-- 크롭 모달 -->
 
 <div
   class="modal"
@@ -831,12 +780,14 @@ body {
         다른 이미지 선택
       </button>
 
+
       <button
         class="cancel-btn"
         id="cancelCropBtn"
       >
         취소
       </button>
+
 
       <button
         class="save-crop-btn"
@@ -855,9 +806,9 @@ body {
 
 <script>
 
-/* =========================================================
+/* ================================
    DOM
-========================================================= */
+================================ */
 
 const imageGrid =
   document.getElementById("imageGrid");
@@ -867,6 +818,9 @@ const fileInput =
 
 const targetInput =
   document.getElementById("targetInput");
+
+const captchaTitle =
+  document.getElementById("captchaTitle");
 
 const description =
   document.getElementById("description");
@@ -892,26 +846,24 @@ const cropImage =
 const zoomSlider =
   document.getElementById("zoomSlider");
 
-const downloadBtn =
-  document.getElementById("downloadBtn");
 
+/* ================================
+   슬롯 데이터
+================================ */
 
-/* =========================================================
-   9개 슬롯 데이터
-========================================================= */
+const slots =
+  Array.from(
+    { length: 9 },
+    () => ({
+      original: null,
+      cropped: null,
 
-const slots = Array.from(
-  { length: 9 },
-  () => ({
-    original: null,
-    cropped: null,
+      zoom: 1,
 
-    zoom: 1,
-
-    offsetX: 0,
-    offsetY: 0
-  })
-);
+      offsetX: 0,
+      offsetY: 0
+    })
+  );
 
 
 let currentSlot = null;
@@ -923,9 +875,9 @@ let baseWidth = 0;
 let baseHeight = 0;
 
 
-/* =========================================================
-   한글 조사
-========================================================= */
+/* ================================
+   한글 조사 판별
+================================ */
 
 function getSubjectParticle(word) {
 
@@ -933,8 +885,12 @@ function getSubjectParticle(word) {
     return "가";
   }
 
+
   const lastChar =
-    word.charCodeAt(word.length - 1);
+    word.charCodeAt(
+      word.length - 1
+    );
+
 
   if (
     lastChar < 0xAC00 ||
@@ -943,8 +899,13 @@ function getSubjectParticle(word) {
     return "가";
   }
 
+
   const hasBatchim =
-    (lastChar - 0xAC00) % 28 !== 0;
+    (
+      lastChar -
+      0xAC00
+    ) % 28 !== 0;
+
 
   return hasBatchim
     ? "이"
@@ -953,9 +914,9 @@ function getSubjectParticle(word) {
 }
 
 
-/* =========================================================
-   안내문 변경
-========================================================= */
+/* ================================
+   텍스트 변경
+================================ */
 
 targetInput.addEventListener(
   "input",
@@ -964,10 +925,15 @@ targetInput.addEventListener(
     const target =
       targetInput.value.trim();
 
+
+    captchaTitle.textContent =
+      target || "OO";
+
+
     if (!target) {
 
       description.innerHTML = `
-        OO가 있는 이미지를 모두 선택하세요.<br>
+        가 있는 이미지를 모두 선택하세요.<br>
         위의 조건과 일치하는 이미지를 모두 선택했으면 확인을 클릭하세요.
       `;
 
@@ -980,7 +946,7 @@ targetInput.addEventListener(
 
 
     description.innerHTML = `
-      ${target}${particle} 있는 이미지를 모두 선택하세요.<br>
+      ${particle} 있는 이미지를 모두 선택하세요.<br>
       위의 조건과 일치하는 이미지를 모두 선택했으면 확인을 클릭하세요.
     `;
 
@@ -988,9 +954,9 @@ targetInput.addEventListener(
 );
 
 
-/* =========================================================
-   색상 변경
-========================================================= */
+/* ================================
+   컬러 변경
+================================ */
 
 colorInput.addEventListener(
   "input",
@@ -999,8 +965,10 @@ colorInput.addEventListener(
     const color =
       colorInput.value;
 
+
     captchaHeader.style.background =
       color;
+
 
     confirmButton.style.background =
       color;
@@ -1009,9 +977,9 @@ colorInput.addEventListener(
 );
 
 
-/* =========================================================
-   슬롯 생성
-========================================================= */
+/* ================================
+   9칸 생성
+================================ */
 
 function renderSlots() {
 
@@ -1023,6 +991,7 @@ function renderSlots() {
 
       const div =
         document.createElement("div");
+
 
       div.className =
         "image-slot";
@@ -1037,8 +1006,10 @@ function renderSlots() {
         const img =
           document.createElement("img");
 
+
         img.src =
           slot.cropped;
+
 
         div.appendChild(img);
 
@@ -1048,8 +1019,10 @@ function renderSlots() {
       const hover =
         document.createElement("div");
 
+
       hover.className =
         "slot-hover";
+
 
       hover.textContent =
         slot.cropped
@@ -1070,9 +1043,13 @@ function renderSlots() {
 
           } else {
 
-            currentSlot = index;
+            currentSlot =
+              index;
 
-            fileInput.value = "";
+
+            fileInput.value =
+              "";
+
 
             fileInput.click();
 
@@ -1090,9 +1067,9 @@ function renderSlots() {
 }
 
 
-/* =========================================================
+/* ================================
    이미지 업로드
-========================================================= */
+================================ */
 
 fileInput.addEventListener(
   "change",
@@ -1100,6 +1077,7 @@ fileInput.addEventListener(
 
     const file =
       event.target.files[0];
+
 
     if (!file) {
       return;
@@ -1116,14 +1094,18 @@ fileInput.addEventListener(
         slots[currentSlot].original =
           event.target.result;
 
+
         slots[currentSlot].cropped =
           null;
+
 
         slots[currentSlot].zoom =
           1;
 
+
         slots[currentSlot].offsetX =
           0;
+
 
         slots[currentSlot].offsetY =
           0;
@@ -1140,20 +1122,23 @@ fileInput.addEventListener(
 );
 
 
-/* =========================================================
-   크롭 편집 열기
-========================================================= */
+/* ================================
+   크롭 열기
+================================ */
 
 function openCropEditor(index) {
 
-  currentSlot = index;
+  currentSlot =
+    index;
 
 
   const slot =
     slots[index];
 
 
-  cropModal.classList.add("active");
+  cropModal.classList.add(
+    "active"
+  );
 
 
   cropImage.onload =
@@ -1161,6 +1146,7 @@ function openCropEditor(index) {
 
       imageWidth =
         cropImage.naturalWidth;
+
 
       imageHeight =
         cropImage.naturalHeight;
@@ -1184,9 +1170,9 @@ function openCropEditor(index) {
 }
 
 
-/* =========================================================
-   기본 이미지 크기 계산
-========================================================= */
+/* ================================
+   이미지 기본 크기
+================================ */
 
 function updateBaseSize() {
 
@@ -1203,25 +1189,29 @@ function updateBaseSize() {
     baseHeight =
       stageSize;
 
+
     baseWidth =
-      stageSize * imageRatio;
+      stageSize *
+      imageRatio;
 
   } else {
 
     baseWidth =
       stageSize;
 
+
     baseHeight =
-      stageSize / imageRatio;
+      stageSize /
+      imageRatio;
 
   }
 
 }
 
 
-/* =========================================================
-   이미지 위치 제한
-========================================================= */
+/* ================================
+   위치 제한
+================================ */
 
 function clampOffsets() {
 
@@ -1234,26 +1224,38 @@ function clampOffsets() {
 
 
   const zoom =
-    parseFloat(zoomSlider.value);
+    parseFloat(
+      zoomSlider.value
+    );
 
 
   const currentWidth =
-    baseWidth * zoom;
+    baseWidth *
+    zoom;
+
 
   const currentHeight =
-    baseHeight * zoom;
+    baseHeight *
+    zoom;
 
 
   const maxX =
     Math.max(
       0,
-      (currentWidth - stageSize) / 2
+      (
+        currentWidth -
+        stageSize
+      ) / 2
     );
+
 
   const maxY =
     Math.max(
       0,
-      (currentHeight - stageSize) / 2
+      (
+        currentHeight -
+        stageSize
+      ) / 2
     );
 
 
@@ -1279,9 +1281,9 @@ function clampOffsets() {
 }
 
 
-/* =========================================================
-   크롭 화면 업데이트
-========================================================= */
+/* ================================
+   크롭 화면 적용
+================================ */
 
 function applyCropTransform() {
 
@@ -1295,7 +1297,9 @@ function applyCropTransform() {
 
 
   const zoom =
-    parseFloat(zoomSlider.value);
+    parseFloat(
+      zoomSlider.value
+    );
 
 
   slot.zoom =
@@ -1306,14 +1310,18 @@ function applyCropTransform() {
 
 
   const width =
-    baseWidth * zoom;
+    baseWidth *
+    zoom;
+
 
   const height =
-    baseHeight * zoom;
+    baseHeight *
+    zoom;
 
 
   cropImage.style.width =
     `${width}px`;
+
 
   cropImage.style.height =
     `${height}px`;
@@ -1321,6 +1329,7 @@ function applyCropTransform() {
 
   cropImage.style.left =
     `calc(50% + ${slot.offsetX}px)`;
+
 
   cropImage.style.top =
     `calc(50% + ${slot.offsetY}px)`;
@@ -1334,9 +1343,9 @@ zoomSlider.addEventListener(
 );
 
 
-/* =========================================================
+/* ================================
    드래그
-========================================================= */
+================================ */
 
 let dragging = false;
 
@@ -1356,7 +1365,8 @@ cropStage.addEventListener(
     }
 
 
-    dragging = true;
+    dragging =
+      true;
 
 
     cropStage.classList.add(
@@ -1372,6 +1382,7 @@ cropStage.addEventListener(
     startX =
       event.clientX;
 
+
     startY =
       event.clientY;
 
@@ -1382,6 +1393,7 @@ cropStage.addEventListener(
 
     startOffsetX =
       slot.offsetX;
+
 
     startOffsetY =
       slot.offsetY;
@@ -1427,7 +1439,9 @@ cropStage.addEventListener(
 
 function stopDragging() {
 
-  dragging = false;
+  dragging =
+    false;
+
 
   cropStage.classList.remove(
     "dragging"
@@ -1448,17 +1462,20 @@ cropStage.addEventListener(
 );
 
 
-/* =========================================================
+/* ================================
    다른 이미지 선택
-========================================================= */
+================================ */
 
 document
-  .getElementById("changeImageBtn")
+  .getElementById(
+    "changeImageBtn"
+  )
   .addEventListener(
     "click",
     () => {
 
-      fileInput.value = "";
+      fileInput.value =
+        "";
 
       fileInput.click();
 
@@ -1466,12 +1483,14 @@ document
   );
 
 
-/* =========================================================
+/* ================================
    취소
-========================================================= */
+================================ */
 
 document
-  .getElementById("cancelCropBtn")
+  .getElementById(
+    "cancelCropBtn"
+  )
   .addEventListener(
     "click",
     () => {
@@ -1480,31 +1499,39 @@ document
         "active"
       );
 
-      currentSlot = null;
+
+      currentSlot =
+        null;
 
     }
   );
 
 
-/* =========================================================
-   크롭 결과 Canvas 생성
-========================================================= */
+/* ================================
+   크롭 적용
+================================ */
 
 document
-  .getElementById("saveCropBtn")
+  .getElementById(
+    "saveCropBtn"
+  )
   .addEventListener(
     "click",
     () => {
 
-      const size = 800;
+      const size =
+        800;
 
 
       const canvas =
-        document.createElement("canvas");
+        document.createElement(
+          "canvas"
+        );
 
 
       canvas.width =
         size;
+
 
       canvas.height =
         size;
@@ -1551,6 +1578,7 @@ document
           size -
           drawWidth
         ) / 2 +
+
         (
           slot.offsetX *
           size /
@@ -1563,6 +1591,7 @@ document
           size -
           drawHeight
         ) / 2 +
+
         (
           slot.offsetY *
           size /
@@ -1592,7 +1621,8 @@ document
       );
 
 
-      currentSlot = null;
+      currentSlot =
+        null;
 
 
       renderSlots();
@@ -1601,11 +1631,11 @@ document
   );
 
 
-/* =========================================================
-   PNG 다운로드
-========================================================= */
+/* ================================
+   확인 클릭 → PNG 다운로드
+================================ */
 
-downloadBtn.addEventListener(
+confirmButton.addEventListener(
   "click",
   async () => {
 
@@ -1630,7 +1660,9 @@ downloadBtn.addEventListener(
 
 
     const link =
-      document.createElement("a");
+      document.createElement(
+        "a"
+      );
 
 
     link.download =
@@ -1649,9 +1681,9 @@ downloadBtn.addEventListener(
 );
 
 
-/* =========================================================
+/* ================================
    시작
-========================================================= */
+================================ */
 
 renderSlots();
 
