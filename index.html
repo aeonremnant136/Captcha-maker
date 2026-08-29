@@ -1,0 +1,1661 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>CAPTCHA 이미지 생성기</title>
+
+<!-- PNG 저장용 -->
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+<style>
+/* =========================================================
+   기본
+========================================================= */
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #f3f3f3;
+  font-family:
+    Arial,
+    "Noto Sans KR",
+    sans-serif;
+  color: #333;
+}
+
+.app {
+  width: min(1100px, 94vw);
+  margin: 40px auto 80px;
+}
+
+
+/* =========================================================
+   편집 패널
+========================================================= */
+
+.editor-panel {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 30px;
+
+  box-shadow:
+    0 8px 30px rgba(0,0,0,.08);
+}
+
+.editor-panel h1 {
+  margin: 0 0 20px;
+  font-size: 24px;
+}
+
+.settings {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: end;
+}
+
+.setting {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.setting label {
+  font-size: 13px;
+  font-weight: bold;
+  color: #666;
+}
+
+.setting input[type="text"] {
+  width: 240px;
+  height: 42px;
+
+  border: 1px solid #ddd;
+  border-radius: 6px;
+
+  padding: 0 12px;
+
+  font-size: 16px;
+}
+
+.setting input[type="color"] {
+  width: 70px;
+  height: 42px;
+
+  border: none;
+  background: transparent;
+
+  cursor: pointer;
+}
+
+.download-btn {
+  height: 42px;
+
+  border: none;
+  border-radius: 6px;
+
+  padding: 0 22px;
+
+  background: #673ab7;
+  color: white;
+
+  font-size: 15px;
+  font-weight: bold;
+
+  cursor: pointer;
+}
+
+.download-btn:hover {
+  filter: brightness(.9);
+}
+
+
+/* =========================================================
+   CAPTCHA 전체
+========================================================= */
+
+#captcha {
+  width: min(720px, 100%);
+  margin: auto;
+
+  background: #fff;
+
+  border: 1px solid #eee;
+
+  box-shadow:
+    0 8px 30px rgba(0,0,0,.08);
+
+  overflow: hidden;
+}
+
+
+/* =========================================================
+   상단 안내 영역
+========================================================= */
+
+.captcha-header {
+  margin: 14px 14px 8px;
+
+  min-height: 240px;
+
+  padding: 38px 42px;
+
+  background: #673ab7;
+
+  color: white;
+
+  transition: background .2s;
+}
+
+.captcha-title {
+  margin-bottom: 14px;
+
+  font-size: 62px;
+  font-weight: 400;
+
+  letter-spacing: -5px;
+
+  line-height: 1;
+}
+
+.captcha-description {
+  max-width: 520px;
+
+  color: rgba(255,255,255,.62);
+
+  font-size: 24px;
+
+  font-weight: 300;
+
+  line-height: 1.45;
+}
+
+
+/* =========================================================
+   3 x 3 이미지
+========================================================= */
+
+.image-grid {
+  margin: 0 14px;
+
+  display: grid;
+
+  grid-template-columns: repeat(3, 1fr);
+
+  gap: 6px;
+
+  background: white;
+}
+
+.image-slot {
+  position: relative;
+
+  aspect-ratio: 1 / 1;
+
+  overflow: hidden;
+
+  background:
+    linear-gradient(
+      135deg,
+      #f5f5f5,
+      #ececec
+    );
+
+  cursor: pointer;
+}
+
+.image-slot.empty::after {
+  content: "+";
+
+  position: absolute;
+
+  left: 50%;
+  top: 50%;
+
+  transform: translate(-50%, -50%);
+
+  font-size: 46px;
+
+  font-weight: 200;
+
+  color: #aaa;
+}
+
+.image-slot img {
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+
+  display: block;
+}
+
+.slot-hover {
+  position: absolute;
+
+  inset: 0;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  background: rgba(0,0,0,.35);
+
+  color: white;
+
+  font-size: 14px;
+
+  opacity: 0;
+
+  transition: opacity .15s;
+}
+
+.image-slot:hover .slot-hover {
+  opacity: 1;
+}
+
+
+/* =========================================================
+   하단 CAPTCHA UI
+========================================================= */
+
+.captcha-footer {
+  height: 135px;
+
+  margin-top: 10px;
+
+  border-top: 2px solid #eee;
+
+  display: flex;
+
+  align-items: center;
+
+  padding: 0 34px;
+
+  gap: 42px;
+}
+
+.fake-icon {
+  width: 58px;
+  height: 58px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  color: #777;
+
+  flex-shrink: 0;
+}
+
+.fake-icon svg {
+  width: 48px;
+  height: 48px;
+}
+
+.confirm-button {
+  margin-left: auto;
+
+  width: 210px;
+  height: 86px;
+
+  border-radius: 8px;
+
+  background: #673ab7;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  color: rgba(255,255,255,.72);
+
+  font-size: 27px;
+
+  font-weight: 300;
+
+  transition: background .2s;
+}
+
+
+/* =========================================================
+   크롭 모달
+========================================================= */
+
+.modal {
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 9999;
+
+  display: none;
+
+  align-items: center;
+  justify-content: center;
+
+  background: rgba(0,0,0,.65);
+
+  padding: 20px;
+}
+
+.modal.active {
+  display: flex;
+}
+
+.modal-box {
+  width: min(620px, 95vw);
+
+  background: white;
+
+  border-radius: 12px;
+
+  padding: 24px;
+
+  box-shadow:
+    0 20px 80px rgba(0,0,0,.35);
+}
+
+.modal-box h2 {
+  margin: 0 0 18px;
+
+  font-size: 20px;
+}
+
+
+/* =========================================================
+   크롭 영역
+========================================================= */
+
+.crop-stage {
+  position: relative;
+
+  width: 100%;
+
+  aspect-ratio: 1;
+
+  overflow: hidden;
+
+  background:
+    repeating-conic-gradient(
+      #ddd 0% 25%,
+      #eee 0% 50%
+    )
+    50% / 28px 28px;
+
+  cursor: grab;
+
+  user-select: none;
+
+  touch-action: none;
+}
+
+.crop-stage.dragging {
+  cursor: grabbing;
+}
+
+.crop-image {
+  position: absolute;
+
+  left: 50%;
+  top: 50%;
+
+  transform:
+    translate(-50%, -50%);
+
+  pointer-events: none;
+
+  max-width: none;
+  max-height: none;
+}
+
+.crop-guide {
+  position: absolute;
+
+  inset: 0;
+
+  pointer-events: none;
+
+  border: 2px solid white;
+
+  box-shadow:
+    inset 0 0 0 1px rgba(0,0,0,.25);
+}
+
+
+/* =========================================================
+   모달 컨트롤
+========================================================= */
+
+.crop-controls {
+  margin-top: 18px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 14px;
+
+  flex-wrap: wrap;
+}
+
+.crop-controls label {
+  font-size: 14px;
+}
+
+.crop-controls input[type="range"] {
+  width: 180px;
+}
+
+.modal-actions {
+  margin-top: 22px;
+
+  display: flex;
+
+  justify-content: flex-end;
+
+  gap: 10px;
+}
+
+.modal-actions button {
+  height: 42px;
+
+  padding: 0 18px;
+
+  border-radius: 6px;
+
+  border: none;
+
+  cursor: pointer;
+
+  font-size: 14px;
+}
+
+.cancel-btn {
+  background: #eee;
+}
+
+.save-crop-btn {
+  background: #673ab7;
+
+  color: white;
+}
+
+.change-image-btn {
+  margin-right: auto;
+
+  background: white;
+
+  border: 1px solid #ddd !important;
+}
+
+
+/* =========================================================
+   모바일
+========================================================= */
+
+@media (max-width: 600px) {
+
+  .captcha-header {
+    min-height: 180px;
+
+    padding: 28px 24px;
+  }
+
+  .captcha-title {
+    font-size: 45px;
+  }
+
+  .captcha-description {
+    font-size: 16px;
+  }
+
+  .captcha-footer {
+    height: 100px;
+
+    padding: 0 18px;
+
+    gap: 15px;
+  }
+
+  .fake-icon {
+    width: 42px;
+  }
+
+  .fake-icon svg {
+    width: 36px;
+  }
+
+  .confirm-button {
+    width: 130px;
+    height: 62px;
+
+    font-size: 21px;
+  }
+
+}
+</style>
+</head>
+
+
+<body>
+
+<div class="app">
+
+
+<!-- =====================================================
+     편집 패널
+===================================================== -->
+
+<div class="editor-panel">
+
+  <h1>CAPTCHA 이미지 생성기</h1>
+
+  <div class="settings">
+
+    <div class="setting">
+
+      <label>
+        OO 부분 입력
+      </label>
+
+      <input
+        type="text"
+        id="targetInput"
+        placeholder="예: 신호등"
+      >
+
+    </div>
+
+
+    <div class="setting">
+
+      <label>
+        상단 박스 색상
+      </label>
+
+      <input
+        type="color"
+        id="colorInput"
+        value="#673ab7"
+      >
+
+    </div>
+
+
+    <button
+      class="download-btn"
+      id="downloadBtn"
+    >
+      PNG 다운로드
+    </button>
+
+  </div>
+
+</div>
+
+
+
+<!-- =====================================================
+     실제 CAPTCHA
+===================================================== -->
+
+<div id="captcha">
+
+
+  <!-- 상단 -->
+
+  <div
+    class="captcha-header"
+    id="captchaHeader"
+  >
+
+    <div class="captcha-title">
+      가나다
+    </div>
+
+    <div
+      class="captcha-description"
+      id="description"
+    >
+      OO가 있는 이미지를 모두 선택하세요.<br>
+      위의 조건과 일치하는 이미지를 모두 선택했으면 확인을 클릭하세요.
+    </div>
+
+  </div>
+
+
+
+  <!-- 9칸 -->
+
+  <div
+    class="image-grid"
+    id="imageGrid"
+  ></div>
+
+
+
+  <!-- 하단 -->
+
+  <div class="captcha-footer">
+
+
+    <!-- 새로고침 -->
+
+    <div class="fake-icon">
+
+      <svg
+        viewBox="0 0 64 64"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="4"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+
+        <path
+          d="M53 24A22 22 0 1 0 55 40"
+        />
+
+        <path
+          d="M53 10V24H39"
+        />
+
+      </svg>
+
+    </div>
+
+
+
+    <!-- 헤드폰 -->
+
+    <div class="fake-icon">
+
+      <svg
+        viewBox="0 0 64 64"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="4"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+
+        <path
+          d="M10 35V30A22 22 0 0 1 54 30V35"
+        />
+
+        <path
+          d="M10 35V48H20V35"
+          fill="currentColor"
+        />
+
+        <path
+          d="M54 35V48H44V35"
+          fill="currentColor"
+        />
+
+      </svg>
+
+    </div>
+
+
+
+    <!-- 정보 -->
+
+    <div class="fake-icon">
+
+      <svg
+        viewBox="0 0 64 64"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="4"
+      >
+
+        <circle
+          cx="32"
+          cy="32"
+          r="24"
+        />
+
+        <path
+          d="M32 29V46"
+        />
+
+        <circle
+          cx="32"
+          cy="20"
+          r="2"
+          fill="currentColor"
+        />
+
+      </svg>
+
+    </div>
+
+
+
+    <!-- 확인 -->
+
+    <div
+      class="confirm-button"
+      id="confirmButton"
+    >
+      확인
+    </div>
+
+
+  </div>
+
+</div>
+
+</div>
+
+
+
+<!-- =====================================================
+     숨겨진 파일 업로드
+===================================================== -->
+
+<input
+  type="file"
+  id="fileInput"
+  accept="image/*"
+  hidden
+>
+
+
+
+<!-- =====================================================
+     크롭 모달
+===================================================== -->
+
+<div
+  class="modal"
+  id="cropModal"
+>
+
+  <div class="modal-box">
+
+    <h2>
+      이미지 위치 및 크롭 설정
+    </h2>
+
+
+    <div
+      class="crop-stage"
+      id="cropStage"
+    >
+
+      <img
+        id="cropImage"
+        class="crop-image"
+      >
+
+      <div class="crop-guide"></div>
+
+    </div>
+
+
+    <div class="crop-controls">
+
+      <label>
+        확대 / 축소
+      </label>
+
+      <input
+        type="range"
+        id="zoomSlider"
+        min="1"
+        max="3"
+        step="0.01"
+        value="1"
+      >
+
+    </div>
+
+
+    <div class="modal-actions">
+
+      <button
+        class="change-image-btn"
+        id="changeImageBtn"
+      >
+        다른 이미지 선택
+      </button>
+
+      <button
+        class="cancel-btn"
+        id="cancelCropBtn"
+      >
+        취소
+      </button>
+
+      <button
+        class="save-crop-btn"
+        id="saveCropBtn"
+      >
+        적용
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+
+<script>
+
+/* =========================================================
+   DOM
+========================================================= */
+
+const imageGrid =
+  document.getElementById("imageGrid");
+
+const fileInput =
+  document.getElementById("fileInput");
+
+const targetInput =
+  document.getElementById("targetInput");
+
+const description =
+  document.getElementById("description");
+
+const colorInput =
+  document.getElementById("colorInput");
+
+const captchaHeader =
+  document.getElementById("captchaHeader");
+
+const confirmButton =
+  document.getElementById("confirmButton");
+
+const cropModal =
+  document.getElementById("cropModal");
+
+const cropStage =
+  document.getElementById("cropStage");
+
+const cropImage =
+  document.getElementById("cropImage");
+
+const zoomSlider =
+  document.getElementById("zoomSlider");
+
+const downloadBtn =
+  document.getElementById("downloadBtn");
+
+
+/* =========================================================
+   9개 슬롯 데이터
+========================================================= */
+
+const slots = Array.from(
+  { length: 9 },
+  () => ({
+    original: null,
+    cropped: null,
+
+    zoom: 1,
+
+    offsetX: 0,
+    offsetY: 0
+  })
+);
+
+
+let currentSlot = null;
+
+let imageWidth = 0;
+let imageHeight = 0;
+
+let baseWidth = 0;
+let baseHeight = 0;
+
+
+/* =========================================================
+   한글 조사
+========================================================= */
+
+function getSubjectParticle(word) {
+
+  if (!word) {
+    return "가";
+  }
+
+  const lastChar =
+    word.charCodeAt(word.length - 1);
+
+  if (
+    lastChar < 0xAC00 ||
+    lastChar > 0xD7A3
+  ) {
+    return "가";
+  }
+
+  const hasBatchim =
+    (lastChar - 0xAC00) % 28 !== 0;
+
+  return hasBatchim
+    ? "이"
+    : "가";
+
+}
+
+
+/* =========================================================
+   안내문 변경
+========================================================= */
+
+targetInput.addEventListener(
+  "input",
+  () => {
+
+    const target =
+      targetInput.value.trim();
+
+    if (!target) {
+
+      description.innerHTML = `
+        OO가 있는 이미지를 모두 선택하세요.<br>
+        위의 조건과 일치하는 이미지를 모두 선택했으면 확인을 클릭하세요.
+      `;
+
+      return;
+    }
+
+
+    const particle =
+      getSubjectParticle(target);
+
+
+    description.innerHTML = `
+      ${target}${particle} 있는 이미지를 모두 선택하세요.<br>
+      위의 조건과 일치하는 이미지를 모두 선택했으면 확인을 클릭하세요.
+    `;
+
+  }
+);
+
+
+/* =========================================================
+   색상 변경
+========================================================= */
+
+colorInput.addEventListener(
+  "input",
+  () => {
+
+    const color =
+      colorInput.value;
+
+    captchaHeader.style.background =
+      color;
+
+    confirmButton.style.background =
+      color;
+
+  }
+);
+
+
+/* =========================================================
+   슬롯 생성
+========================================================= */
+
+function renderSlots() {
+
+  imageGrid.innerHTML = "";
+
+
+  slots.forEach(
+    (slot, index) => {
+
+      const div =
+        document.createElement("div");
+
+      div.className =
+        "image-slot";
+
+
+      if (!slot.cropped) {
+
+        div.classList.add("empty");
+
+      } else {
+
+        const img =
+          document.createElement("img");
+
+        img.src =
+          slot.cropped;
+
+        div.appendChild(img);
+
+      }
+
+
+      const hover =
+        document.createElement("div");
+
+      hover.className =
+        "slot-hover";
+
+      hover.textContent =
+        slot.cropped
+          ? "이미지 수정"
+          : "이미지 업로드";
+
+
+      div.appendChild(hover);
+
+
+      div.addEventListener(
+        "click",
+        () => {
+
+          if (slot.original) {
+
+            openCropEditor(index);
+
+          } else {
+
+            currentSlot = index;
+
+            fileInput.value = "";
+
+            fileInput.click();
+
+          }
+
+        }
+      );
+
+
+      imageGrid.appendChild(div);
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   이미지 업로드
+========================================================= */
+
+fileInput.addEventListener(
+  "change",
+  event => {
+
+    const file =
+      event.target.files[0];
+
+    if (!file) {
+      return;
+    }
+
+
+    const reader =
+      new FileReader();
+
+
+    reader.onload =
+      event => {
+
+        slots[currentSlot].original =
+          event.target.result;
+
+        slots[currentSlot].cropped =
+          null;
+
+        slots[currentSlot].zoom =
+          1;
+
+        slots[currentSlot].offsetX =
+          0;
+
+        slots[currentSlot].offsetY =
+          0;
+
+
+        openCropEditor(currentSlot);
+
+      };
+
+
+    reader.readAsDataURL(file);
+
+  }
+);
+
+
+/* =========================================================
+   크롭 편집 열기
+========================================================= */
+
+function openCropEditor(index) {
+
+  currentSlot = index;
+
+
+  const slot =
+    slots[index];
+
+
+  cropModal.classList.add("active");
+
+
+  cropImage.onload =
+    () => {
+
+      imageWidth =
+        cropImage.naturalWidth;
+
+      imageHeight =
+        cropImage.naturalHeight;
+
+
+      updateBaseSize();
+
+
+      zoomSlider.value =
+        slot.zoom || 1;
+
+
+      applyCropTransform();
+
+    };
+
+
+  cropImage.src =
+    slot.original;
+
+}
+
+
+/* =========================================================
+   기본 이미지 크기 계산
+========================================================= */
+
+function updateBaseSize() {
+
+  const stageSize =
+    cropStage.clientWidth;
+
+
+  const imageRatio =
+    imageWidth / imageHeight;
+
+
+  if (imageRatio > 1) {
+
+    baseHeight =
+      stageSize;
+
+    baseWidth =
+      stageSize * imageRatio;
+
+  } else {
+
+    baseWidth =
+      stageSize;
+
+    baseHeight =
+      stageSize / imageRatio;
+
+  }
+
+}
+
+
+/* =========================================================
+   이미지 위치 제한
+========================================================= */
+
+function clampOffsets() {
+
+  const slot =
+    slots[currentSlot];
+
+
+  const stageSize =
+    cropStage.clientWidth;
+
+
+  const zoom =
+    parseFloat(zoomSlider.value);
+
+
+  const currentWidth =
+    baseWidth * zoom;
+
+  const currentHeight =
+    baseHeight * zoom;
+
+
+  const maxX =
+    Math.max(
+      0,
+      (currentWidth - stageSize) / 2
+    );
+
+  const maxY =
+    Math.max(
+      0,
+      (currentHeight - stageSize) / 2
+    );
+
+
+  slot.offsetX =
+    Math.max(
+      -maxX,
+      Math.min(
+        maxX,
+        slot.offsetX
+      )
+    );
+
+
+  slot.offsetY =
+    Math.max(
+      -maxY,
+      Math.min(
+        maxY,
+        slot.offsetY
+      )
+    );
+
+}
+
+
+/* =========================================================
+   크롭 화면 업데이트
+========================================================= */
+
+function applyCropTransform() {
+
+  if (currentSlot === null) {
+    return;
+  }
+
+
+  const slot =
+    slots[currentSlot];
+
+
+  const zoom =
+    parseFloat(zoomSlider.value);
+
+
+  slot.zoom =
+    zoom;
+
+
+  clampOffsets();
+
+
+  const width =
+    baseWidth * zoom;
+
+  const height =
+    baseHeight * zoom;
+
+
+  cropImage.style.width =
+    `${width}px`;
+
+  cropImage.style.height =
+    `${height}px`;
+
+
+  cropImage.style.left =
+    `calc(50% + ${slot.offsetX}px)`;
+
+  cropImage.style.top =
+    `calc(50% + ${slot.offsetY}px)`;
+
+}
+
+
+zoomSlider.addEventListener(
+  "input",
+  applyCropTransform
+);
+
+
+/* =========================================================
+   드래그
+========================================================= */
+
+let dragging = false;
+
+let startX = 0;
+let startY = 0;
+
+let startOffsetX = 0;
+let startOffsetY = 0;
+
+
+cropStage.addEventListener(
+  "pointerdown",
+  event => {
+
+    if (currentSlot === null) {
+      return;
+    }
+
+
+    dragging = true;
+
+
+    cropStage.classList.add(
+      "dragging"
+    );
+
+
+    cropStage.setPointerCapture(
+      event.pointerId
+    );
+
+
+    startX =
+      event.clientX;
+
+    startY =
+      event.clientY;
+
+
+    const slot =
+      slots[currentSlot];
+
+
+    startOffsetX =
+      slot.offsetX;
+
+    startOffsetY =
+      slot.offsetY;
+
+  }
+);
+
+
+cropStage.addEventListener(
+  "pointermove",
+  event => {
+
+    if (!dragging) {
+      return;
+    }
+
+
+    const slot =
+      slots[currentSlot];
+
+
+    slot.offsetX =
+      startOffsetX +
+      (
+        event.clientX -
+        startX
+      );
+
+
+    slot.offsetY =
+      startOffsetY +
+      (
+        event.clientY -
+        startY
+      );
+
+
+    applyCropTransform();
+
+  }
+);
+
+
+function stopDragging() {
+
+  dragging = false;
+
+  cropStage.classList.remove(
+    "dragging"
+  );
+
+}
+
+
+cropStage.addEventListener(
+  "pointerup",
+  stopDragging
+);
+
+
+cropStage.addEventListener(
+  "pointercancel",
+  stopDragging
+);
+
+
+/* =========================================================
+   다른 이미지 선택
+========================================================= */
+
+document
+  .getElementById("changeImageBtn")
+  .addEventListener(
+    "click",
+    () => {
+
+      fileInput.value = "";
+
+      fileInput.click();
+
+    }
+  );
+
+
+/* =========================================================
+   취소
+========================================================= */
+
+document
+  .getElementById("cancelCropBtn")
+  .addEventListener(
+    "click",
+    () => {
+
+      cropModal.classList.remove(
+        "active"
+      );
+
+      currentSlot = null;
+
+    }
+  );
+
+
+/* =========================================================
+   크롭 결과 Canvas 생성
+========================================================= */
+
+document
+  .getElementById("saveCropBtn")
+  .addEventListener(
+    "click",
+    () => {
+
+      const size = 800;
+
+
+      const canvas =
+        document.createElement("canvas");
+
+
+      canvas.width =
+        size;
+
+      canvas.height =
+        size;
+
+
+      const ctx =
+        canvas.getContext("2d");
+
+
+      const stageSize =
+        cropStage.clientWidth;
+
+
+      const zoom =
+        parseFloat(
+          zoomSlider.value
+        );
+
+
+      const slot =
+        slots[currentSlot];
+
+
+      const drawWidth =
+        baseWidth *
+        zoom *
+        (
+          size /
+          stageSize
+        );
+
+
+      const drawHeight =
+        baseHeight *
+        zoom *
+        (
+          size /
+          stageSize
+        );
+
+
+      const drawX =
+        (
+          size -
+          drawWidth
+        ) / 2 +
+        (
+          slot.offsetX *
+          size /
+          stageSize
+        );
+
+
+      const drawY =
+        (
+          size -
+          drawHeight
+        ) / 2 +
+        (
+          slot.offsetY *
+          size /
+          stageSize
+        );
+
+
+      ctx.drawImage(
+        cropImage,
+
+        drawX,
+        drawY,
+
+        drawWidth,
+        drawHeight
+      );
+
+
+      slots[currentSlot].cropped =
+        canvas.toDataURL(
+          "image/png"
+        );
+
+
+      cropModal.classList.remove(
+        "active"
+      );
+
+
+      currentSlot = null;
+
+
+      renderSlots();
+
+    }
+  );
+
+
+/* =========================================================
+   PNG 다운로드
+========================================================= */
+
+downloadBtn.addEventListener(
+  "click",
+  async () => {
+
+    const captcha =
+      document.getElementById(
+        "captcha"
+      );
+
+
+    const canvas =
+      await html2canvas(
+        captcha,
+        {
+          scale: 2,
+
+          backgroundColor:
+            "#ffffff",
+
+          useCORS: true
+        }
+      );
+
+
+    const link =
+      document.createElement("a");
+
+
+    link.download =
+      "captcha.png";
+
+
+    link.href =
+      canvas.toDataURL(
+        "image/png"
+      );
+
+
+    link.click();
+
+  }
+);
+
+
+/* =========================================================
+   시작
+========================================================= */
+
+renderSlots();
+
+</script>
+
+</body>
+</html>
