@@ -2153,6 +2153,30 @@ confirmButton.addEventListener(
       );
 
 
+    /* 모바일 Safari 팝업 차단 방지 */
+
+    const isMobile =
+      /iPhone|iPad|iPod|Android/i.test(
+        navigator.userAgent
+      );
+
+
+    let mobileWindow = null;
+
+
+    /* 클릭 순간에 미리 창 생성 */
+
+    if (isMobile) {
+
+      mobileWindow =
+        window.open(
+          "",
+          "_blank"
+        );
+
+    }
+
+
     const canvas =
       await html2canvas(
         captcha,
@@ -2169,23 +2193,94 @@ confirmButton.addEventListener(
       );
 
 
-    const link =
-      document.createElement(
-        "a"
-      );
+    /* 캔버스 → Blob */
+
+    canvas.toBlob(
+      blob => {
+
+        if (!blob) {
+
+          return;
+
+        }
 
 
-    link.download =
-      "captcha.png";
+        const imageURL =
+          URL.createObjectURL(
+            blob
+          );
 
 
-    link.href =
-      canvas.toDataURL(
-        "image/png"
-      );
+        /* =========================
+           모바일
+        ========================= */
+
+        if (isMobile) {
+
+          if (mobileWindow) {
+
+            mobileWindow.location.href =
+              imageURL;
+
+          } else {
+
+            window.location.href =
+              imageURL;
+
+          }
+
+        }
 
 
-    link.click();
+        /* =========================
+           PC
+        ========================= */
+
+        else {
+
+          const link =
+            document.createElement(
+              "a"
+            );
+
+
+          link.href =
+            imageURL;
+
+
+          link.download =
+            "captcha.png";
+
+
+          document.body.appendChild(
+            link
+          );
+
+
+          link.click();
+
+
+          document.body.removeChild(
+            link
+          );
+
+        }
+
+
+        setTimeout(
+          () => {
+
+            URL.revokeObjectURL(
+              imageURL
+            );
+
+          },
+          60000
+        );
+
+      },
+      "image/png"
+    );
 
   }
 );
