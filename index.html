@@ -33,8 +33,11 @@ body {
 
 .editor-panel {
   background: #fff;
+
   border-radius: 12px;
+
   padding: 24px;
+
   margin-bottom: 30px;
 
   box-shadow: 0 8px 30px rgba(0,0,0,.08);
@@ -48,13 +51,16 @@ body {
 .settings {
   display: flex;
   flex-wrap: wrap;
+
   gap: 16px;
+
   align-items: end;
 }
 
 .setting {
   display: flex;
   flex-direction: column;
+
   gap: 8px;
 }
 
@@ -86,6 +92,43 @@ body {
   background: transparent;
 
   cursor: pointer;
+}
+
+
+/* ================================
+   이미지 개수 선택
+================================ */
+
+.mode-buttons {
+  display: flex;
+  gap: 6px;
+}
+
+.mode-button {
+  width: 58px;
+  height: 42px;
+
+  border: 1px solid #ddd;
+  border-radius: 6px;
+
+  background: #fff;
+
+  font-size: 14px;
+  font-weight: 500;
+
+  cursor: pointer;
+
+  transition:
+    background .15s,
+    color .15s,
+    border-color .15s;
+}
+
+.mode-button.active {
+  background: #673ab7;
+  border-color: #673ab7;
+
+  color: white;
 }
 
 
@@ -147,7 +190,7 @@ body {
 
 
 /* ================================
-   3 × 3 이미지
+   이미지 그리드
 ================================ */
 
 .image-grid {
@@ -155,11 +198,18 @@ body {
 
   display: grid;
 
-  grid-template-columns: repeat(3, 1fr);
-
   gap: 6px;
 
   background: #fff;
+}
+
+.image-grid.mode-9,
+.image-grid.mode-1 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.image-grid.mode-4 {
+  grid-template-columns: repeat(2, 1fr);
 }
 
 .image-slot {
@@ -202,6 +252,15 @@ body {
   object-fit: cover;
 
   display: block;
+}
+
+
+/* ================================
+   1장 분할 이미지
+================================ */
+
+.image-slot.split-image {
+  background-repeat: no-repeat;
 }
 
 .slot-hover {
@@ -287,7 +346,7 @@ body {
   color: rgba(255,255,255,.72);
 
   font-size: 27px;
- font-weight: 400;
+  font-weight: 400;
 
   cursor: pointer;
 
@@ -524,6 +583,9 @@ body {
 
     <div class="settings">
 
+
+      <!-- 텍스트 -->
+
       <div class="setting">
 
         <label>텍스트</label>
@@ -537,6 +599,8 @@ body {
       </div>
 
 
+      <!-- 컬러 -->
+
       <div class="setting">
 
         <label>컬러</label>
@@ -546,6 +610,40 @@ body {
           id="colorInput"
           value="#673ab7"
         >
+
+      </div>
+
+
+      <!-- 이미지 개수 -->
+
+      <div class="setting">
+
+        <label>이미지</label>
+
+        <div class="mode-buttons">
+
+          <button
+            class="mode-button"
+            data-mode="1"
+          >
+            1장
+          </button>
+
+          <button
+            class="mode-button"
+            data-mode="4"
+          >
+            4장
+          </button>
+
+          <button
+            class="mode-button active"
+            data-mode="9"
+          >
+            9장
+          </button>
+
+        </div>
 
       </div>
 
@@ -587,10 +685,10 @@ body {
 
 
 
-    <!-- 이미지 9칸 -->
+    <!-- 이미지 -->
 
     <div
-      class="image-grid"
+      class="image-grid mode-9"
       id="imageGrid"
     ></div>
 
@@ -848,23 +946,50 @@ const zoomSlider =
 
 
 /* ================================
-   슬롯 데이터
+   이미지 데이터
 ================================ */
 
-const slots =
-  Array.from(
+function createSlot() {
+
+  return {
+
+    original: null,
+
+    cropped: null,
+
+    zoom: 1,
+
+    offsetX: 0,
+
+    offsetY: 0
+
+  };
+
+}
+
+
+const modeData = {
+
+  1: createSlot(),
+
+  4: Array.from(
+    { length: 4 },
+    createSlot
+  ),
+
+  9: Array.from(
     { length: 9 },
-    () => ({
-      original: null,
-      cropped: null,
+    createSlot
+  )
 
-      zoom: 1,
+};
 
-      offsetX: 0,
-      offsetY: 0
-    })
-  );
 
+/* ================================
+   현재 모드
+================================ */
+
+let currentMode = 9;
 
 let currentSlot = null;
 
@@ -876,13 +1001,32 @@ let baseHeight = 0;
 
 
 /* ================================
+   현재 슬롯 가져오기
+================================ */
+
+function getCurrentSlotData() {
+
+  if (currentMode === 1) {
+
+    return modeData[1];
+
+  }
+
+  return modeData[currentMode][currentSlot];
+
+}
+
+
+/* ================================
    한글 조사 판별
 ================================ */
 
 function getSubjectParticle(word) {
 
   if (!word) {
+
     return "가";
+
   }
 
 
@@ -896,7 +1040,9 @@ function getSubjectParticle(word) {
     lastChar < 0xAC00 ||
     lastChar > 0xD7A3
   ) {
+
     return "가";
+
   }
 
 
@@ -938,6 +1084,7 @@ targetInput.addEventListener(
       `;
 
       return;
+
     }
 
 
@@ -973,12 +1120,86 @@ colorInput.addEventListener(
     confirmButton.style.background =
       color;
 
+
+    document
+      .querySelectorAll(".mode-button.active")
+      .forEach(
+        button => {
+
+          button.style.background =
+            color;
+
+          button.style.borderColor =
+            color;
+
+        }
+      );
+
   }
 );
 
 
 /* ================================
-   9칸 생성
+   모드 변경
+================================ */
+
+document
+  .querySelectorAll(".mode-button")
+  .forEach(
+    button => {
+
+      button.addEventListener(
+        "click",
+        () => {
+
+          currentMode =
+            Number(
+              button.dataset.mode
+            );
+
+
+          document
+            .querySelectorAll(".mode-button")
+            .forEach(
+              item => {
+
+                item.classList.remove(
+                  "active"
+                );
+
+                item.style.background =
+                  "";
+
+                item.style.borderColor =
+                  "";
+
+              }
+            );
+
+
+          button.classList.add(
+            "active"
+          );
+
+
+          button.style.background =
+            colorInput.value;
+
+          button.style.borderColor =
+            colorInput.value;
+
+
+          renderSlots();
+
+        }
+      );
+
+    }
+  );
+
+
+/* ================================
+   이미지 슬롯 생성
 ================================ */
 
 function renderSlots() {
@@ -986,15 +1207,91 @@ function renderSlots() {
   imageGrid.innerHTML = "";
 
 
-  slots.forEach(
-    (slot, index) => {
-
-      const div =
-        document.createElement("div");
+  imageGrid.className =
+    `image-grid mode-${currentMode}`;
 
 
-      div.className =
-        "image-slot";
+  let slotCount;
+
+
+  if (currentMode === 1) {
+
+    slotCount = 9;
+
+  } else {
+
+    slotCount =
+      currentMode;
+
+  }
+
+
+  for (
+    let index = 0;
+    index < slotCount;
+    index++
+  ) {
+
+    const div =
+      document.createElement("div");
+
+
+    div.className =
+      "image-slot";
+
+
+    /* ============================
+       1장 → 전체 이미지 분할
+    ============================ */
+
+    if (currentMode === 1) {
+
+      const slot =
+        modeData[1];
+
+
+      if (!slot.cropped) {
+
+        div.classList.add("empty");
+
+      } else {
+
+        const row =
+          Math.floor(index / 3);
+
+        const col =
+          index % 3;
+
+
+        div.classList.add(
+          "split-image"
+        );
+
+
+        div.style.backgroundImage =
+          `url("${slot.cropped}")`;
+
+
+        div.style.backgroundSize =
+          "300% 300%";
+
+
+        div.style.backgroundPosition =
+          `${col * 50}% ${row * 50}%`;
+
+      }
+
+    }
+
+
+    /* ============================
+       4장 / 9장 개별 이미지
+    ============================ */
+
+    else {
+
+      const slot =
+        modeData[currentMode][index];
 
 
       if (!slot.cropped) {
@@ -1015,13 +1312,28 @@ function renderSlots() {
 
       }
 
-
-      const hover =
-        document.createElement("div");
+    }
 
 
-      hover.className =
-        "slot-hover";
+    const hover =
+      document.createElement("div");
+
+
+    hover.className =
+      "slot-hover";
+
+
+    if (currentMode === 1) {
+
+      hover.textContent =
+        modeData[1].cropped
+          ? "이미지 수정"
+          : "이미지 업로드";
+
+    } else {
+
+      const slot =
+        modeData[currentMode][index];
 
 
       hover.textContent =
@@ -1029,40 +1341,75 @@ function renderSlots() {
           ? "이미지 수정"
           : "이미지 업로드";
 
+    }
 
-      div.appendChild(hover);
+
+    div.appendChild(hover);
 
 
-      div.addEventListener(
-        "click",
-        () => {
+    div.addEventListener(
+      "click",
+      () => {
 
-          if (slot.original) {
 
-            openCropEditor(index);
+        /* ========================
+           1장 모드
+        ======================== */
+
+        if (currentMode === 1) {
+
+          currentSlot =
+            0;
+
+
+          if (modeData[1].original) {
+
+            openCropEditor();
 
           } else {
 
-            currentSlot =
-              index;
-
-
-            fileInput.value =
-              "";
-
+            fileInput.value = "";
 
             fileInput.click();
 
           }
 
+          return;
+
         }
-      );
 
 
-      imageGrid.appendChild(div);
+        /* ========================
+           4장 / 9장
+        ======================== */
 
-    }
-  );
+        currentSlot =
+          index;
+
+
+        const slot =
+          modeData[currentMode][index];
+
+
+        if (slot.original) {
+
+          openCropEditor();
+
+        } else {
+
+          fileInput.value = "";
+
+          fileInput.click();
+
+        }
+
+      }
+    );
+
+
+    imageGrid.appendChild(div);
+
+  }
 
 }
 
@@ -1080,7 +1427,9 @@ fileInput.addEventListener(
 
 
     if (!file) {
+
       return;
+
     }
 
 
@@ -1091,27 +1440,31 @@ fileInput.addEventListener(
     reader.onload =
       event => {
 
-        slots[currentSlot].original =
+        const slot =
+          getCurrentSlotData();
+
+
+        slot.original =
           event.target.result;
 
 
-        slots[currentSlot].cropped =
+        slot.cropped =
           null;
 
 
-        slots[currentSlot].zoom =
+        slot.zoom =
           1;
 
 
-        slots[currentSlot].offsetX =
+        slot.offsetX =
           0;
 
 
-        slots[currentSlot].offsetY =
+        slot.offsetY =
           0;
 
 
-        openCropEditor(currentSlot);
+        openCropEditor();
 
       };
 
@@ -1126,14 +1479,10 @@ fileInput.addEventListener(
    크롭 열기
 ================================ */
 
-function openCropEditor(index) {
-
-  currentSlot =
-    index;
-
+function openCropEditor() {
 
   const slot =
-    slots[index];
+    getCurrentSlotData();
 
 
   cropModal.classList.add(
@@ -1181,7 +1530,8 @@ function updateBaseSize() {
 
 
   const imageRatio =
-    imageWidth / imageHeight;
+    imageWidth /
+    imageHeight;
 
 
   if (imageRatio > 1) {
@@ -1216,7 +1566,7 @@ function updateBaseSize() {
 function clampOffsets() {
 
   const slot =
-    slots[currentSlot];
+    getCurrentSlotData();
 
 
   const stageSize =
@@ -1287,13 +1637,15 @@ function clampOffsets() {
 
 function applyCropTransform() {
 
-  if (currentSlot === null) {
-    return;
-  }
-
-
   const slot =
-    slots[currentSlot];
+    getCurrentSlotData();
+
+
+  if (!slot) {
+
+    return;
+
+  }
 
 
   const zoom =
@@ -1360,8 +1712,14 @@ cropStage.addEventListener(
   "pointerdown",
   event => {
 
-    if (currentSlot === null) {
+    const slot =
+      getCurrentSlotData();
+
+
+    if (!slot) {
+
       return;
+
     }
 
 
@@ -1387,10 +1745,6 @@ cropStage.addEventListener(
       event.clientY;
 
 
-    const slot =
-      slots[currentSlot];
-
-
     startOffsetX =
       slot.offsetX;
 
@@ -1407,12 +1761,14 @@ cropStage.addEventListener(
   event => {
 
     if (!dragging) {
+
       return;
+
     }
 
 
     const slot =
-      slots[currentSlot];
+      getCurrentSlotData();
 
 
     slot.offsetX =
@@ -1474,8 +1830,7 @@ document
     "click",
     () => {
 
-      fileInput.value =
-        "";
+      fileInput.value = "";
 
       fileInput.click();
 
@@ -1520,7 +1875,7 @@ document
     () => {
 
       const size =
-        800;
+        1200;
 
 
       const canvas =
@@ -1552,7 +1907,7 @@ document
 
 
       const slot =
-        slots[currentSlot];
+        getCurrentSlotData();
 
 
       const drawWidth =
@@ -1600,6 +1955,7 @@ document
 
 
       ctx.drawImage(
+
         cropImage,
 
         drawX,
@@ -1607,10 +1963,11 @@ document
 
         drawWidth,
         drawHeight
+
       );
 
 
-      slots[currentSlot].cropped =
+      slot.cropped =
         canvas.toDataURL(
           "image/png"
         );
@@ -1649,12 +2006,14 @@ confirmButton.addEventListener(
       await html2canvas(
         captcha,
         {
+
           scale: 2,
 
           backgroundColor:
             "#ffffff",
 
           useCORS: true
+
         }
       );
 
