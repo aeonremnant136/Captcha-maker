@@ -64,7 +64,7 @@ body {
   gap: 8px;
 }
 
-.setting label {
+.setting > label {
   font-size: 13px;
   font-weight: bold;
   color: #666;
@@ -90,6 +90,50 @@ body {
 
   border: none;
   background: transparent;
+
+  cursor: pointer;
+}
+
+
+/* ================================
+   컬러 설정
+================================ */
+
+.gradient-colors {
+  display: flex;
+
+  align-items: center;
+
+  gap: 12px;
+}
+
+.color-option {
+  display: flex;
+
+  align-items: center;
+
+  gap: 6px;
+}
+
+.no-gradient-label {
+  display: flex !important;
+
+  align-items: center;
+
+  gap: 5px;
+
+  font-size: 12px !important;
+  font-weight: 400 !important;
+
+  color: #777 !important;
+
+  white-space: nowrap;
+
+  cursor: pointer;
+}
+
+.no-gradient-label input {
+  margin: 0;
 
   cursor: pointer;
 }
@@ -162,6 +206,7 @@ body {
   padding: 38px 42px;
 
   background: #673ab7;
+
   color: white;
 
   transition: background .2s;
@@ -262,6 +307,11 @@ body {
 .image-slot.split-image {
   background-repeat: no-repeat;
 }
+
+
+/* ================================
+   슬롯 호버
+================================ */
 
 .slot-hover {
   position: absolute;
@@ -605,11 +655,41 @@ body {
 
         <label>컬러</label>
 
-        <input
-          type="color"
-          id="colorInput"
-          value="#673ab7"
-        >
+        <div class="gradient-colors">
+
+          <div class="color-option">
+
+            <input
+              type="color"
+              id="colorInput"
+              value="#673ab7"
+            >
+
+          </div>
+
+
+          <div class="color-option">
+
+            <input
+              type="color"
+              id="colorInput2"
+              value="#b000ff"
+            >
+
+            <label class="no-gradient-label">
+
+              <input
+                type="checkbox"
+                id="disableGradient"
+              >
+
+              단색
+
+            </label>
+
+          </div>
+
+        </div>
 
       </div>
 
@@ -926,6 +1006,12 @@ const description =
 const colorInput =
   document.getElementById("colorInput");
 
+const colorInput2 =
+  document.getElementById("colorInput2");
+
+const disableGradient =
+  document.getElementById("disableGradient");
+
 const captchaHeader =
   document.getElementById("captchaHeader");
 
@@ -1102,38 +1188,103 @@ targetInput.addEventListener(
 
 
 /* ================================
-   컬러 변경
+   컬러 / 그라데이션
 ================================ */
+
+function updateColors() {
+
+  const color1 =
+    colorInput.value;
+
+  const color2 =
+    colorInput2.value;
+
+
+  let background;
+
+
+  /* 2번 컬러 단색 → 단색 */
+
+  if (disableGradient.checked) {
+
+    background =
+      color1;
+
+  }
+
+
+  /* 2번 컬러 있음 → 그라데이션 */
+
+  else {
+
+    background =
+      `linear-gradient(
+        135deg,
+        ${color1},
+        ${color2}
+      )`;
+
+  }
+
+
+  /* 상단 */
+
+  captchaHeader.style.background =
+    background;
+
+
+  /* 확인 버튼 */
+
+  confirmButton.style.background =
+    background;
+
+
+  /* 선택된 이미지 수 버튼 */
+
+  document
+    .querySelectorAll(".mode-button.active")
+    .forEach(
+      button => {
+
+        button.style.background =
+          color1;
+
+        button.style.borderColor =
+          color1;
+
+      }
+    );
+
+}
+
 
 colorInput.addEventListener(
   "input",
+  updateColors
+);
+
+
+colorInput2.addEventListener(
+  "input",
+  updateColors
+);
+
+
+disableGradient.addEventListener(
+  "change",
   () => {
 
-    const color =
-      colorInput.value;
+    colorInput2.disabled =
+      disableGradient.checked;
 
 
-    captchaHeader.style.background =
-      color;
+    colorInput2.style.opacity =
+      disableGradient.checked
+        ? "0.35"
+        : "1";
 
 
-    confirmButton.style.background =
-      color;
-
-
-    document
-      .querySelectorAll(".mode-button.active")
-      .forEach(
-        button => {
-
-          button.style.background =
-            color;
-
-          button.style.borderColor =
-            color;
-
-        }
-      );
+    updateColors();
 
   }
 );
@@ -2043,6 +2194,8 @@ confirmButton.addEventListener(
 /* ================================
    시작
 ================================ */
+
+updateColors();
 
 renderSlots();
 
